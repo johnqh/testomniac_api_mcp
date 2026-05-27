@@ -21,6 +21,8 @@ import { registerPageTools } from "./tools/pages.ts";
 import { registerTestStructureTools } from "./tools/test-structure.ts";
 import { registerScenarioTools } from "./tools/scenarios.ts";
 import { registerEnvironmentTools } from "./tools/environments.ts";
+import { registerPersonaTools } from "./tools/personas.ts";
+import { registerSequenceTools } from "./tools/sequences.ts";
 
 const apiUrl = process.env["TESTOMNIAC_API_URL"];
 const authToken = process.env["TESTOMNIAC_AUTH_TOKEN"];
@@ -55,6 +57,8 @@ registerPageTools(server);
 registerTestStructureTools(server);
 registerScenarioTools(server);
 registerEnvironmentTools(server);
+registerPersonaTools(server);
+registerSequenceTools(server);
 
 // Start stdio transport
 const transport = new StdioServerTransport();

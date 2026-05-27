@@ -115,6 +115,8 @@ Add to `.claude/settings.json`:
 ## Related Projects
 
 - **testomniac_api** — The Hono API this MCP wraps
+- **testomniac_types** — Shared type definitions (`@sudobility/testomniac_types`)
+- **testomniac_runner_mcp** — Companion MCP for browser automation (this MCP is for API queries)
 - **testomniac_app** — Web frontend
 - **testomniac_runner** — Server-side test runner worker
 - **testomniac_runner_service** — Shared test execution library
