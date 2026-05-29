@@ -8,7 +8,9 @@ export function registerProductTools(server: McpServer) {
     "List products the user has access to within an entity",
     { entitySlug: z.string().describe("The entity slug") },
     async ({ entitySlug }) => {
-      const result = await client.get(`/api/v1/products?entitySlug=${entitySlug}`);
+      const result = await client.get(
+        `/api/v1/entities/${encodeURIComponent(entitySlug)}/products`
+      );
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
   );

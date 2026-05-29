@@ -9,7 +9,7 @@ export function registerEnvironmentTools(server: McpServer) {
     { productId: z.number().describe("The product ID") },
     async ({ productId }) => {
       const result = await client.get(
-        `/api/v1/test-environments?productId=${productId}`
+        `/api/v1/products/${productId}/environments`
       );
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
