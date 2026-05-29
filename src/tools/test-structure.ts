@@ -54,4 +54,16 @@ export function registerTestStructureTools(server: McpServer) {
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
   );
+
+  server.tool(
+    "get_finding_detail",
+    "Get full details for a finding including its description, the interaction that triggered it, the complete dependency chain, and a ready-to-run Playwright script that reproduces the issue. The script includes all prerequisite interactions in execution order.",
+    { findingId: z.number().describe("The finding ID") },
+    async ({ findingId }) => {
+      const result = await client.get(
+        `/api/v1/scanner/test-run-findings/${findingId}/reproduce`
+      );
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
 }
