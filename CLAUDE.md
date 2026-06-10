@@ -46,7 +46,9 @@ src/
     ├── pages.ts          # list_run_pages, get_page_summary
     ├── test-structure.ts # list_test_surfaces, list_test_elements, get_test_actions, get_element_run_details, get_element_run_findings
     ├── scenarios.ts      # list_scenarios, create_scenario, delete_scenario
-    └── environments.ts   # list_environments
+    ├── environments.ts   # list_environments
+    ├── personas.ts       # detect_personas, list_personas
+    └── sequences.ts      # generate_sequence, list_sequences, run_sequence, get_sequence_run
 ```
 
 ## Environment Variables
@@ -59,7 +61,7 @@ src/
 
 *At least one auth method required.
 
-## Tools (20)
+## Tools (26)
 
 ### Scan & Runs
 - `start_scan` — Start a discovery scan for a URL
@@ -92,6 +94,16 @@ src/
 
 ### Environments
 - `list_environments` — Test environments for a product
+
+### Personas
+- `detect_personas` — AI-detect user personas for a product using page analysis
+- `list_personas` — List detected personas for a product
+
+### Sequences
+- `generate_sequence` — AI-generate a test sequence from a scenario
+- `list_sequences` — List test sequences for a scenario
+- `run_sequence` — Start a test sequence run
+- `get_sequence_run` — Get status of a sequence run
 
 ## Usage with Claude Code
 
