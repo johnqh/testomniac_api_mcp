@@ -17,10 +17,16 @@ bun install
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `TESTOMNIAC_API_URL` | Yes | Base URL of the Testomniac API (e.g., `http://localhost:8027`) |
-| `TESTOMNIAC_AUTH_TOKEN` | No* | Firebase Bearer token for user-facing routes |
-| `TESTOMNIAC_API_KEY` | No* | API key for scanner routes |
+| `TESTOMNIAC_AUTH_TOKEN` | No* | Firebase ID token, sent as `Authorization: Bearer` |
+| `TESTOMNIAC_API_KEY` | No* | Entity API key (`tst_…`) or the API's global `SCANNER_API_KEY`, sent as `X-Scanner-Key` |
 
 *At least one auth method (`TESTOMNIAC_AUTH_TOKEN` or `TESTOMNIAC_API_KEY`) is required.
+
+Both auth methods reach the same routes — the API's `firebaseAuthMiddleware`
+accepts an entity API key, the global scanner key, or a Firebase token, in that
+order. The one exception is `list_entities`, which resolves entity membership by
+Firebase UID and so returns nothing under key auth; supply the entity slug
+directly in that case.
 
 ### Usage with Claude Code
 
@@ -41,21 +47,33 @@ Add to your `.claude/settings.json`:
 }
 ```
 
-## Available Tools (26)
+## Available Tools (50)
 
-The server exposes 26 tools across 9 categories:
+| Category | Tools |
+|----------|-------|
+| **Scan** | `start_scan` |
+| **Entities** | `list_entities`, `list_products`, `resolve_product_by_url` |
+| **Products** | `get_product`, `list_environments`, `list_product_runs` |
+| **Environments** | `list_environment_pages`, `list_environment_test_interactions` |
+| **Runs** | `get_run_status`, `get_run_summary`, `get_run_dashboard`, `list_run_findings`, `get_run_findings_summary`, `get_run_expertise_summary`, `get_run_structure`, `get_navigation_map`, `list_run_personas`, `list_run_scaffolds`, `list_run_patterns` |
+| **Pages** | `list_run_pages`, `get_page_summary`, `list_page_states` |
+| **Test structure** | `list_test_surfaces`, `list_surface_interactions`, `get_test_interaction`, `get_test_actions`, `get_interaction_run`, `get_interaction_run_findings`, `list_surface_run_interaction_runs`, `get_interaction_script`, `get_surface_script` |
+| **Findings** | `get_finding_detail`, `get_finding_script`, `list_runner_findings`, `list_expertises` |
+| **Personas** | `list_personas`, `detect_personas` |
+| **Scenarios** | `list_scenarios`, `get_scenario`, `create_scenario`, `update_scenario`, `delete_scenario`, `detect_scenarios` |
+| **Sequences** | `generate_sequence`, `list_sequences`, `get_sequence_interactions`, `get_sequence_script`, `run_sequence`, `get_sequence_run` |
 
-| Category | Tools | Description |
-|----------|-------|-------------|
-| **Scan** | `start_scan` | Start a discovery scan for a URL |
-| **Runs** | `get_run_status`, `get_run_summary`, `list_run_findings`, `get_run_structure`, `get_navigation_map` | Query run status, summaries, findings, structure, and site maps |
-| **Products** | `list_products`, `get_product`, `list_product_runs` | List and inspect products and their runs |
-| **Pages** | `list_run_pages`, `get_page_summary` | Discovered pages and their finding breakdowns |
-| **Test Structure** | `list_test_surfaces`, `list_test_elements`, `get_test_actions`, `get_element_run_details`, `get_element_run_findings` | Navigate the test surface/element/action hierarchy |
-| **Scenarios** | `list_scenarios`, `create_scenario`, `delete_scenario` | Manage test scenarios |
-| **Environments** | `list_environments` | List test environments for a product |
-| **Personas** | `detect_personas`, `list_personas` | AI-detect and list user personas for a product |
-| **Sequences** | `generate_sequence`, `list_sequences`, `run_sequence`, `get_sequence_run` | AI-generate, list, run, and monitor test sequences |
+### Typical flow
+
+```
+list_entities → list_products → list_environments
+start_scan → get_run_status / get_run_dashboard
+get_run_findings_summary → list_run_findings → get_finding_detail
+```
+
+`get_finding_detail` returns a ready-to-run Playwright script with the finding's
+prerequisite interactions replayed in order — that is usually the fastest route
+from "a scan found something" to "here is how to reproduce it".
 
 ## Development
 
@@ -76,7 +94,10 @@ Testomniac API MCP Server (this project)
 Testomniac API (Hono, port 8027)
 ```
 
-The MCP server is a thin HTTP client layer. Each tool maps to one or more REST API endpoints. Authentication headers are injected automatically based on configured environment variables.
+The MCP server is a thin HTTP client layer. Each tool maps to exactly one REST
+endpoint under `/api/v1`, unwraps the API's `{ success, data }` envelope, and
+returns `data` as pretty-printed JSON. Auth headers are injected automatically
+from the configured environment variables.
 
 ## Related Projects
 

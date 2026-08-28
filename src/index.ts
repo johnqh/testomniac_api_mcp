@@ -6,22 +6,24 @@
  * Communicates with the running Testomniac API over HTTP.
  *
  * Environment variables:
- *   TESTOMNIAC_API_URL   - Base URL of the API (e.g., http://localhost:8027)
+ *   TESTOMNIAC_API_URL    - Base URL of the API (e.g., http://localhost:8027)
  *   TESTOMNIAC_AUTH_TOKEN - Firebase Bearer token for user-facing routes
- *   TESTOMNIAC_API_KEY   - API key for scanner routes
+ *   TESTOMNIAC_API_KEY    - Entity API key (tst_...) or the global scanner key
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { configure } from "./client.ts";
 import { registerScanTools } from "./tools/scan.ts";
-import { registerRunTools } from "./tools/runs.ts";
+import { registerEntityTools } from "./tools/entities.ts";
 import { registerProductTools } from "./tools/products.ts";
+import { registerEnvironmentTools } from "./tools/environments.ts";
+import { registerRunTools } from "./tools/runs.ts";
 import { registerPageTools } from "./tools/pages.ts";
 import { registerTestStructureTools } from "./tools/test-structure.ts";
-import { registerScenarioTools } from "./tools/scenarios.ts";
-import { registerEnvironmentTools } from "./tools/environments.ts";
+import { registerFindingTools } from "./tools/findings.ts";
 import { registerPersonaTools } from "./tools/personas.ts";
+import { registerScenarioTools } from "./tools/scenarios.ts";
 import { registerSequenceTools } from "./tools/sequences.ts";
 
 const apiUrl = process.env["TESTOMNIAC_API_URL"];
@@ -46,18 +48,20 @@ configure({ apiUrl, authToken, apiKey });
 // Create the MCP server
 const server = new McpServer({
   name: "testomniac-api",
-  version: "0.1.0",
+  version: "0.2.0",
 });
 
 // Register all tool groups
 registerScanTools(server);
-registerRunTools(server);
+registerEntityTools(server);
 registerProductTools(server);
+registerEnvironmentTools(server);
+registerRunTools(server);
 registerPageTools(server);
 registerTestStructureTools(server);
-registerScenarioTools(server);
-registerEnvironmentTools(server);
+registerFindingTools(server);
 registerPersonaTools(server);
+registerScenarioTools(server);
 registerSequenceTools(server);
 
 // Start stdio transport

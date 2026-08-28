@@ -1,6 +1,11 @@
 /**
  * HTTP client for the Testomniac API.
- * Handles auth (Bearer token or X-Scanner-Key) and error formatting.
+ *
+ * Auth mirrors `firebaseAuthMiddleware` in testomniac_api, which accepts, in
+ * order: an entity API key (`tst_`-prefixed, via `X-Api-Key`/`X-Scanner-Key`),
+ * the global scanner key (`SCANNER_API_KEY`, same headers, un-prefixed), or a
+ * Firebase `Bearer` token. Sending both a key and a token is fine — the key
+ * wins.
  */
 
 interface ClientConfig {
@@ -43,13 +48,37 @@ function baseUrl(): string {
   return config.apiUrl.replace(/\/$/, "");
 }
 
-export async function get<T = unknown>(path: string): Promise<T> {
+/**
+ * Builds a `?a=1&b=2` suffix, dropping undefined/null/empty values.
+ * Returns "" when nothing survives, so callers can append it unconditionally.
+ */
+export function query(params: Record<string, unknown>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === "") continue;
+    search.set(key, String(value));
+  }
+  const encoded = search.toString();
+  return encoded ? `?${encoded}` : "";
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown
+): Promise<T> {
   const res = await fetch(`${baseUrl()}${path}`, {
-    method: "GET",
+    method,
     headers: getHeaders(),
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const json = (await res.json()) as ApiResponse<T>;
+  let json: ApiResponse<T>;
+  try {
+    json = (await res.json()) as ApiResponse<T>;
+  } catch {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
 
   if (!res.ok || !json.success) {
     throw new Error(json.error || `API error: ${res.status} ${res.statusText}`);
@@ -58,33 +87,18 @@ export async function get<T = unknown>(path: string): Promise<T> {
   return json.data as T;
 }
 
-export async function post<T = unknown>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${baseUrl()}${path}`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const json = (await res.json()) as ApiResponse<T>;
-
-  if (!res.ok || !json.success) {
-    throw new Error(json.error || `API error: ${res.status} ${res.statusText}`);
-  }
-
-  return json.data as T;
+export function get<T = unknown>(path: string): Promise<T> {
+  return request<T>("GET", path);
 }
 
-export async function del<T = unknown>(path: string): Promise<T> {
-  const res = await fetch(`${baseUrl()}${path}`, {
-    method: "DELETE",
-    headers: getHeaders(),
-  });
+export function post<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request<T>("POST", path, body);
+}
 
-  const json = (await res.json()) as ApiResponse<T>;
+export function put<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request<T>("PUT", path, body);
+}
 
-  if (!res.ok || !json.success) {
-    throw new Error(json.error || `API error: ${res.status} ${res.statusText}`);
-  }
-
-  return json.data as T;
+export function del<T = unknown>(path: string): Promise<T> {
+  return request<T>("DELETE", path);
 }
