@@ -1,6 +1,7 @@
 {
   "name": "@sudobility/testomniac_api_mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
+  "private": true,
   "description": "MCP server for the Testomniac API - allows AI assistants to interact with test automation data",
   "type": "module",
   "license": "BUSL-1.1",
