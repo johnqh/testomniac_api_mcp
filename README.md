@@ -79,9 +79,22 @@ from "a scan found something" to "here is how to reproduce it".
 
 ```bash
 bun run dev        # Run MCP server in dev mode (stdio)
-bun run build      # Bundle to dist/index.js
-bun run typecheck  # TypeScript type checking
+bun run build      # Bundle to dist/index.js (--target bun --minify)
+bun run typecheck  # TypeScript type checking (tsc --noEmit)
 bun run start      # Run production bundle
+```
+
+### Testing
+
+There is no automated test suite. To smoke-test tool registration, pipe an
+`initialize` + `tools/list` JSON-RPC pair into the server and read the tool
+count off the response (expect 50):
+
+```bash
+printf '%s\n%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | TESTOMNIAC_API_URL=http://localhost:9999 TESTOMNIAC_API_KEY=x bun run src/index.ts
 ```
 
 ## Architecture
